@@ -1,0 +1,21 @@
+authorName: hazdzz
+experimentName: MGC_PubMed
+trialConcurrency: 1
+maxExecDuration: 1d
+maxTrialNum: 99999
+#choice: local, remote, pai
+trainingServicePlatform: local
+searchSpacePath: citation.json
+#choice: true, false
+useAnnotation: false
+tuner:
+  #choice: TPE, Random, Anneal, Evolution, BatchTuner, MetisTuner, GPTuner
+  #SMAC (SMAC should be installed through nnictl)
+  builtinTunerName: TPE
+  classArgs:
+    #choice: maximize, minimize
+    optimize_mode: maximize
+trial:
+  command: python3 main_mgc.py --mode='tuning' --dataset_config_path='./config/data/pubmed.ini' --model_config_path='./config/model/smgc_sym.ini'
+  codeDir: ../../
+  gpuNum: 0
