@@ -21,7 +21,8 @@ def calc_sym_renorm_mag_adj(dir_adj, g):
     if g == 0:
         sym_renorm_mag_adj = sym_renorm_adj
     else:
-        trs = np.exp(1j * 2 * math.pi * g * (adj_.T - adj_).toarray())
+        trs = np.exp(1j * 2 * math.pi * g * (adj_ - adj_.T).toarray())
+        #trs = np.exp(1j * 2 * math.pi * g * (adj_.T - adj_).toarray())
         sym_renorm_mag_adj = np.multiply(sym_renorm_adj.toarray(), trs)
         sym_renorm_mag_adj = sp.csc_matrix(sym_renorm_mag_adj)
 
@@ -44,7 +45,8 @@ def calc_rw_renorm_mag_adj(dir_adj, g):
     if g == 0:
         rw_renorm_mag_adj = rw_renorm_adj
     else:
-        trs = np.exp(1j * 2 * math.pi * g * (adj_.T - adj_).toarray())
+        trs = np.exp(1j * 2 * math.pi * g * (adj_ - adj_.T).toarray())
+        #trs = np.exp(1j * 2 * math.pi * g * (adj_.T - adj_).toarray())
         rw_renorm_mag_adj = np.multiply(rw_renorm_adj.toarray(), trs)
         rw_renorm_mag_adj = sp.csc_matrix(rw_renorm_mag_adj)
 
