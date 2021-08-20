@@ -230,5 +230,5 @@ if __name__ == "__main__":
 
     model, loss, early_stopping, optimizer, scheduler = prepare_model(g, n_feat, n_class, n_vertex, enable_bias, early_stopping_patience, learning_rate, weight_decay_rate, model_save_path, opt)
 
-    #mean_train_epoch_time_duration = train(epochs, model, optimizer, scheduler, early_stopping, features, labels, loss, idx_train, idx_val)
-    #test(model, model_save_path, features, labels, loss, idx_test, model_name, dataset_name, mean_train_epoch_time_duration)
+    mean_train_epoch_time_duration = train(epochs, model, optimizer, scheduler, early_stopping, features, labels, loss, idx_train, idx_val)
+    test(model, model_save_path, features, labels, loss, idx_test, model_name, dataset_name, mean_train_epoch_time_duration)
