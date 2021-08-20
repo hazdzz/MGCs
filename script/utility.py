@@ -21,8 +21,8 @@ def calc_sym_renorm_mag_adj(dir_adj, g):
     if g == 0:
         sym_renorm_mag_adj = sym_renorm_adj
     else:
-        trs = np.exp(1j * 2 * math.pi * g * (adj_ - adj_.T).toarray())
-        #trs = np.exp(1j * 2 * math.pi * g * (adj_.T - adj_).toarray())
+        trs = np.exp(1j * 2 * math.pi * g * (dir_adj - dir_adj.T).toarray())
+        #trs = np.exp(1j * 2 * math.pi * g * (dir_adj.T - dir_adj).toarray())
         sym_renorm_mag_adj = np.multiply(sym_renorm_adj.toarray(), trs)
         sym_renorm_mag_adj = sp.csc_matrix(sym_renorm_mag_adj)
 
@@ -45,14 +45,14 @@ def calc_rw_renorm_mag_adj(dir_adj, g):
     if g == 0:
         rw_renorm_mag_adj = rw_renorm_adj
     else:
-        trs = np.exp(1j * 2 * math.pi * g * (adj_ - adj_.T).toarray())
-        #trs = np.exp(1j * 2 * math.pi * g * (adj_.T - adj_).toarray())
+        trs = np.exp(1j * 2 * math.pi * g * (dir_adj - dir_adj.T).toarray())
+        #trs = np.exp(1j * 2 * math.pi * g * (dir_adj.T - dir_adj).toarray())
         rw_renorm_mag_adj = np.multiply(rw_renorm_adj.toarray(), trs)
         rw_renorm_mag_adj = sp.csc_matrix(rw_renorm_mag_adj)
 
     return rw_renorm_mag_adj
 
-def calc_mgc_features(renorm_mag_adj, features, alpha, t, K):
+def calc_mgc_features(renorm_mag_adj, features, alpha, t, K, g):
     n_vertex = renorm_mag_adj.shape[0]
     id = sp.csc_matrix(sp.identity(n_vertex))
     
@@ -67,7 +67,10 @@ def calc_mgc_features(renorm_mag_adj, features, alpha, t, K):
     for k in range(1, K):
         mgc_features = mgc_adj_denom.dot(mgc_features) + mgc_adj_num.dot(features)
 
-    mgc_features = np.array(mgc_features.toarray(), dtype=np.float32)
+    if g == 0:
+        mgc_features = np.array(mgc_features.toarray(), dtype=np.float32)
+    else:
+        mgc_features = np.array(mgc_features.toarray(), dtype=np.complex64)
     
     return mgc_features
 

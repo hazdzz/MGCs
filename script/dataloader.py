@@ -1,4 +1,5 @@
 import sys
+import math
 import pickle as pkl
 import numpy as np
 import networkx as nx
@@ -56,6 +57,8 @@ def load_citation_data(dataset_name, dataset_path):
     adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
     adj = sp.csc_matrix(adj)
 
+    g = 0
+
     labels = np.vstack((ally, ty))
     labels[test_idx_reorder, :] = labels[test_idx_range, :]
 
@@ -63,4 +66,28 @@ def load_citation_data(dataset_name, dataset_path):
     idx_val = range(len(y), len(y)+500)
     idx_test = test_idx_range.tolist()
 
-    return features, labels, adj, idx_train, idx_val, idx_test
+    return features, adj, g, labels, idx_train, idx_val, idx_test
+
+def load_webkb_data(dataset_name, dataset_path):
+    dataset_path = dataset_path + dataset_name + '/'
+
+    features = np.genfromtxt(dataset_path + 'features.csv', delimiter=',')
+    features = norm_feat(features)
+
+    dir_adj = np.genfromtxt(dataset_path + 'dir_adj.csv', delimiter=',')
+    G = nx.from_numpy_array(dir_adj)
+    try:
+        cycle = len(nx.algorithms.cycles.find_cycle(G, orientation='original'))
+    except:
+        g = 0
+    else:
+        g = 1 / cycle
+    dir_adj = sp.csc_matrix(dir_adj)
+
+    labels = np.genfromtxt(dataset_path + 'labels.csv', delimiter=',')
+
+    idx_train = np.genfromtxt(dataset_path + 'idx_train.csv', delimiter=',')
+    idx_val = np.genfromtxt(dataset_path + 'idx_val.csv', delimiter=',')
+    idx_test = np.genfromtxt(dataset_path + 'idx_test.csv', delimiter=',')
+
+    return features, dir_adj, g, labels, idx_train, idx_val, idx_test

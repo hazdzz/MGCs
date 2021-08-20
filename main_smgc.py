@@ -35,15 +35,13 @@ def get_parameters():
     parser.add_argument('--enable_cuda', type=bool, default=True, \
                         help='enable or disable CUDA, default as True')
     parser.add_argument('--seed', type=int, default=100, help='the random seed')
-    parser.add_argument('--dataset_config_path', type=str, default='./config/data/citeseer.ini', \
+    parser.add_argument('--dataset_config_path', type=str, default='./config/data/cora.ini', \
                         help='the path of dataset config file, cora.ini for CoRA')
     parser.add_argument('--model_config_path', type=str, default='./config/model/smgc_sym.ini', \
                         help='the path of model config file')
-    parser.add_argument('--alpha', type=float, default=0.01, help='alpha in (0, 1)')
-    parser.add_argument('--t', type=float, default=5.16, help='the diffusion time, t > 0')
-    parser.add_argument('--K', type=int, default=40, help='the number of iteration, K >= 2')
-    parser.add_argument('--g', type=float, default=0, help='the electric charge, g in [0, 0.5], \
-                        for citation graph like CoRA, CiteSeer, PubMed, CoRAR, and CiteSeerR, it should be 0')
+    parser.add_argument('--alpha', type=float, default=0.93, help='alpha in (0, 1)')
+    parser.add_argument('--t', type=float, default=26.78, help='the diffusion time, t > 0')
+    parser.add_argument('--K', type=int, default=5, help='the number of iteration, K >= 2')
     parser.add_argument('--enable_bias', type=bool, default=True, help='enable to use bias in graph convolution layers or not')
     parser.add_argument('--epochs', type=int, default=10000, help='epochs, default as 10000')
     parser.add_argument('--opt', type=str, default='Adam', help='optimizer, default as Adam')
@@ -88,7 +86,6 @@ def get_parameters():
     config.read(dataset_config_path, encoding='utf-8')
     dataset_name = ConfigSectionMap('dataset')['name']
     data_path = './data/'
-    graph_path = None
     learning_rate = float(ConfigSectionMap('model')['learning_rate'])
     weight_decay_rate = float(ConfigSectionMap('model')['weight_decay_rate'])
     model_save_path = ConfigSectionMap('model')['model_save_path']
@@ -101,7 +98,7 @@ def get_parameters():
 
     if mode == 'tuning':
         param = nni.get_next_parameter()
-        alpha, t, K, g = [*param.values()]
+        alpha, t, K = [*param.values()]
     else:
         if args.alpha <= 0 or args.alpha >= 1:
             raise ValueError(f'ERROR: The hyperparameter alpha has to be between 0 and 1, but received {args.alpha}')
@@ -115,29 +112,24 @@ def get_parameters():
             raise ValueError(f'ERROR: The number of iteration K has to be greater than 1, but received {args.K}')
         else:
             K = args.K
-        if (args.g < 0) or (args.g > 0.5):
-            raise ValueError(f'ERROR: The electric charge hyperparameter g should be in [0, 0.5], but received {args.g}.')
-        elif dataset_name == 'cora' or dataset_name == 'citeseer' or dataset_name == 'pubmed' or \
-            dataset_name == 'corar' or dataset_name == 'citeseerr':
-            g = 0
-        else:
-            g = args.g
     
     enable_bias = args.enable_bias
     epochs = args.epochs
     opt = args.opt
     early_stopping_patience = args.early_stopping_patience
 
-    model_save_path = model_save_path + model_name + '_' + renorm_adj_type + '_' + str(g) + '_g_' + str(renorm_adj_type) \
+    model_save_path = model_save_path + model_name + '_' + renorm_adj_type + '_' + str(renorm_adj_type) \
                     + '_' + str(alpha) + '_alpha_' + str(t) + '_t_' + str(K) + '_iteration' + '.pth'
 
-    return device, dataset_name, data_path, graph_path, learning_rate, weight_decay_rate, model_name, \
-            model_save_path, alpha, t, K, renorm_adj_type, g, enable_bias, epochs, opt, early_stopping_patience
+    return device, dataset_name, data_path, learning_rate, weight_decay_rate, model_name, \
+            model_save_path, alpha, t, K, renorm_adj_type, enable_bias, epochs, opt, early_stopping_patience
     
-def process_data(device, dataset_name, data_path, graph_path, g, renorm_adj_type, alpha, t, K):
+def process_data(device, dataset_name, data_path, renorm_adj_type, alpha, t, K):
 
     if dataset_name == 'cora' or dataset_name == 'citeseer' or dataset_name == 'pubmed':
-        features, labels, dir_adj, idx_train, idx_val, idx_test = dataloader.load_citation_data(dataset_name, data_path)
+        features, dir_adj, g, labels, idx_train, idx_val, idx_test = dataloader.load_citation_data(dataset_name, data_path)
+    elif dataset_name == 'cornell' or dataset_name == 'texas' or dataset_name == 'washington' or dataset_name == 'wisconsin':
+        features, dir_adj, g, labels, idx_train, idx_val, idx_test = dataloader.load_webkb_data(dataset_name, data_path)
 
     n_vertex, n_feat, n_labels, n_class = features.shape[0], features.shape[1], labels.shape[0], labels.shape[1]
     labels = np.argmax(labels, axis=1)
@@ -147,7 +139,7 @@ def process_data(device, dataset_name, data_path, graph_path, g, renorm_adj_type
     elif renorm_adj_type == 'rw':
         renorm_mag_adj = utility.calc_rw_renorm_mag_adj(dir_adj, g)
 
-    features = utility.calc_mgc_features(renorm_mag_adj, features, alpha, t, K)
+    features = utility.calc_mgc_features(renorm_mag_adj, features, alpha, t, K, g)
 
     idx_train = torch.LongTensor(idx_train)
     idx_val = torch.LongTensor(idx_val)
@@ -158,7 +150,7 @@ def process_data(device, dataset_name, data_path, graph_path, g, renorm_adj_type
     features = torch.from_numpy(features).to(device)
     labels = torch.LongTensor(labels).to(device)
 
-    return features, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex
+    return features, g, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex
 
 def prepare_model(g, n_feat, n_class, n_vertex, enable_bias, early_stopping_patience, learning_rate, \
                 weight_decay_rate, model_save_path, opt):
@@ -232,11 +224,11 @@ def test(model, model_save_path, features, labels, loss, idx_test, model_name, d
         nni.report_final_result(acc_test.item())
 
 if __name__ == "__main__":
-    device, dataset_name, data_path, graph_path, learning_rate, weight_decay_rate, model_name, model_save_path, alpha, t, K, renorm_adj_type, g, enable_bias, epochs, opt, early_stopping_patience = get_parameters()
+    device, dataset_name, data_path, learning_rate, weight_decay_rate, model_name, model_save_path, alpha, t, K, renorm_adj_type, enable_bias, epochs, opt, early_stopping_patience = get_parameters()
 
-    features, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex = process_data(device, dataset_name, data_path, graph_path, g, renorm_adj_type, alpha, t, K)
+    features, g, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex = process_data(device, dataset_name, data_path, renorm_adj_type, alpha, t, K)
 
     model, loss, early_stopping, optimizer, scheduler = prepare_model(g, n_feat, n_class, n_vertex, enable_bias, early_stopping_patience, learning_rate, weight_decay_rate, model_save_path, opt)
 
-    mean_train_epoch_time_duration = train(epochs, model, optimizer, scheduler, early_stopping, features, labels, loss, idx_train, idx_val)
-    test(model, model_save_path, features, labels, loss, idx_test, model_name, dataset_name, mean_train_epoch_time_duration)
+    #mean_train_epoch_time_duration = train(epochs, model, optimizer, scheduler, early_stopping, features, labels, loss, idx_train, idx_val)
+    #test(model, model_save_path, features, labels, loss, idx_test, model_name, dataset_name, mean_train_epoch_time_duration)
