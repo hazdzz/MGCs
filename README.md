@@ -1,8 +1,4 @@
 # Magnetic Graph Convolutional Networks
-[![issues](https://img.shields.io/github/issues/hazdzz/MGCs)](https://github.com/hazdzz/MGCs/issues)
-[![forks](https://img.shields.io/github/forks/hazdzz/MGCs)](https://github.com/hazdzz/MGCs/network/members)
-[![stars](https://img.shields.io/github/stars/hazdzz/MGCs)](https://github.com/hazdzz/MGCs/stargazers)
-[![License](https://img.shields.io/github/license/hazdzz/MGCs)](./LICENSE)
 
 ## About
 The official PyTorch implementation for the paper *sMGC: Complex-Valued Graph Convolutional Networks via the Magnetic Laplacian for Directed Graphs*.
