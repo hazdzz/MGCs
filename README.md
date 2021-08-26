@@ -14,7 +14,7 @@ pip3 install -r requirements.txt
 ### Node classification accuracy in Citation networks (%) (random seed = 10, 100, or 1000)
 | Model | CoRA | CiteSeer | PubMed |
 | :----: | :----: | :----: | :----: |
-| GAT | 82.60 ± 0.45 | 70.45 ± 0.25 | 77.45 ± 0.45 |
+| GAT | 82.60 ± 0.40 | 70.45 ± 0.25 | 77.45 ± 0.45 |
 | sMGC | 82.70 ± 0.00 | **73.30 ± 0.00** | 79.90 ± 0.10 |
 | MGC | **82.50 ± 1.00** | 71.25 ± 0.95 | **79.70 ± 0.40** |
 
