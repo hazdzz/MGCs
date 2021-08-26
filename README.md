@@ -1,5 +1,5 @@
 # Magnetic Graph Convolutional Networks
-<img src="./figure/magnetic_laplacian.png" style="zoom:50%" />
+<img src="./figure/magnetic_laplacian.png" style="zoom:30%" />
 
 ## About
 The official PyTorch implementation for the paper *sMGC: A Complex-Valued Graph Convolutional Network via the Magnetic Laplacian for Directed Graphs*.
@@ -22,7 +22,8 @@ pip3 install -r requirements.txt
 | Model | Cornell | Texas | Washington | Wisconsin |
 | :----: | :----: | :----: | :----: | :----: |
 | GAT | 51.28 ± 5.13 | 61.84 ± 1.32 | 50.00 ± 2.17 | 50.00 ± 2.83 | 
-| sMGC | | | | | 
+| sMGC | | | | |
+| MGC | | | | |
 
 ### Reproduce experiment results
 #### sMGC
@@ -39,11 +40,6 @@ python3 main_smgc.py --mode='test' --seed=100 --dataset_config_path='./config/da
 PubMed:
 ```console
 python3 main_smgc.py --mode='test' --seed=100 --dataset_config_path='./config/data/pubmed.ini' --alpha=0.01 --t=5.95 --K=25
-```
-
-Texas:
-```console
-python3 main_smgc.py --mode='test' --seed=100 --dataset_config_path='./config/data/texas.ini' --alpha=0.27 --t=0.15 --K=9
 ```
 
 #### MGC
