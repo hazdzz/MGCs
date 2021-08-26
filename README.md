@@ -1,5 +1,5 @@
 # Magnetic Graph Convolutional Networks
-<img src="./figure/magnetic_laplacian.png" style="zoom:30%" />
+<img src="./figure/magnetic_laplacian.png" width="50%" height="50%" alt="Magnetic Laplacian" align=center />
 
 ## About
 The official PyTorch implementation for the paper *sMGC: A Complex-Valued Graph Convolutional Network via the Magnetic Laplacian for Directed Graphs*.
