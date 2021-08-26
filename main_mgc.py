@@ -104,6 +104,7 @@ def get_parameters():
     if mode == 'tuning':
         param = nni.get_next_parameter()
         alpha, t, K, droprate = [*param.values()]
+        K = int(K)
     else:
         if args.alpha <= 0 or args.alpha >= 1:
             raise ValueError(f'ERROR: The hyperparameter alpha has to be between 0 and 1, but received {args.alpha}')

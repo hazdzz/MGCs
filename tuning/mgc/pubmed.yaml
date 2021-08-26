@@ -16,6 +16,6 @@ tuner:
     #choice: maximize, minimize
     optimize_mode: maximize
 trial:
-  command: python3 main_mgc.py --mode='tuning' --dataset_config_path='./config/data/pubmed.ini' --model_config_path='./config/model/smgc_sym.ini'
+  command: python3 main_mgc.py --mode='tuning' --dataset_config_path='./config/data/pubmed.ini' --model_config_path='./config/model/mgc_sym.ini'
   codeDir: ../../
   gpuNum: 0
