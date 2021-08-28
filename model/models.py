@@ -90,6 +90,7 @@ class CMGC(nn.Module):
 
         return x
 
+# This model is proposed for testing boundary condition of the over-smoothing issue.
 class LGC(nn.Module):
     def __init__(self, n_feat, n_class, enable_bias):
         super(LGC, self).__init__()

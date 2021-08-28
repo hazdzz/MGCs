@@ -28,6 +28,7 @@ def set_env(seed):
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
+# This model is proposed for testing boundary condition of the over-smoothing issue.
 def get_parameters():
     parser = argparse.ArgumentParser(description='LGC')
     parser.add_argument('--mode', type=str, default='test', help='running mode, \
@@ -39,7 +40,7 @@ def get_parameters():
                         help='the path of dataset config file, cora.ini for CoRA')
     parser.add_argument('--model_config_path', type=str, default='./config/model/lgc_sym.ini', \
                         help='the path of model config file')
-    parser.add_argument('--gamma', type=float, default=1, help='gamma >= 2, defaut as 2')
+    parser.add_argument('--gamma', type=float, default=2, help='defaut as 2')
     parser.add_argument('--enable_bias', type=bool, default=True, help='enable to use bias in graph convolution layers or not')
     parser.add_argument('--epochs', type=int, default=10000, help='epochs, default as 10000')
     parser.add_argument('--opt', type=str, default='Adam', help='optimizer, default as Adam')
@@ -98,10 +99,7 @@ def get_parameters():
         param = nni.get_next_parameter()
         gamma = [*param.values()][0]
     else:
-        if args.gamma < 1:
-            raise ValueError(f'ERROR: The value of gamma is unacceptable.')
-        else:
-            gamma = args.gamma
+        gamma = args.gamma
     
     enable_bias = args.enable_bias
     epochs = args.epochs
