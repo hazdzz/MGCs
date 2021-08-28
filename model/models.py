@@ -89,3 +89,15 @@ class CMGC(nn.Module):
         x = self.mod_log_softmax(x)
 
         return x
+
+class LGC(nn.Module):
+    def __init__(self, n_feat, n_class, enable_bias):
+        super(LGC, self).__init__()
+        self.linear = nn.Linear(in_features=n_feat, out_features=n_class, bias=enable_bias)
+        self.log_softmax = nn.LogSoftmax(dim=1)
+
+    def forward(self, x):
+        x = self.linear(x)
+        x = self.log_softmax(x)
+
+        return x

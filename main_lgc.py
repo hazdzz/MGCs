@@ -29,7 +29,7 @@ def set_env(seed):
     torch.backends.cudnn.deterministic = True
 
 def get_parameters():
-    parser = argparse.ArgumentParser(description='sMGC')
+    parser = argparse.ArgumentParser(description='LGC')
     parser.add_argument('--mode', type=str, default='test', help='running mode, \
                         default as test, tuning as alternative')
     parser.add_argument('--enable_cuda', type=bool, default=True, \
@@ -37,11 +37,9 @@ def get_parameters():
     parser.add_argument('--seed', type=int, default=100, help='the random seed')
     parser.add_argument('--dataset_config_path', type=str, default='./config/data/cora.ini', \
                         help='the path of dataset config file, cora.ini for CoRA')
-    parser.add_argument('--model_config_path', type=str, default='./config/model/smgc_sym.ini', \
+    parser.add_argument('--model_config_path', type=str, default='./config/model/lgc_sym.ini', \
                         help='the path of model config file')
-    parser.add_argument('--alpha', type=float, default=0.27, help='alpha in (0, 1)')
-    parser.add_argument('--t', type=float, default=0.15, help='the diffusion time, t > 0')
-    parser.add_argument('--K', type=int, default=9, help='the number of iteration, K >= 2')
+    parser.add_argument('--gamma', type=float, default=2, help='gamma >= 2, defaut as 2')
     parser.add_argument('--enable_bias', type=bool, default=True, help='enable to use bias in graph convolution layers or not')
     parser.add_argument('--epochs', type=int, default=10000, help='epochs, default as 10000')
     parser.add_argument('--opt', type=str, default='Adam', help='optimizer, default as Adam')
@@ -92,54 +90,45 @@ def get_parameters():
 
     config.read(model_config_path, encoding='utf-8')
     model_name = ConfigSectionMap('model')['name']
-    renorm_adj_type = ConfigSectionMap('gconv')['renorm_adj_type']
-    if renorm_adj_type != 'sym' and renorm_adj_type != 'rw':
-        raise ValueError(f'ERROR: The type of renormalized adjacency matrix {renorm_adj_type} is undefined.')
+    norm_lap_type = ConfigSectionMap('gconv')['norm_lap_type']
+    if norm_lap_type != 'sym' and norm_lap_type != 'rw':
+        raise ValueError(f'ERROR: The type of normalized Laplacian matrix {norm_lap_type} is undefined.')
 
     if mode == 'tuning':
         param = nni.get_next_parameter()
-        alpha, t, K = [*param.values()]
-        K = int(K)
+        gamma = [*param.values()][0]
     else:
-        if args.alpha <= 0 or args.alpha >= 1:
-            raise ValueError(f'ERROR: The hyperparameter alpha has to be between 0 and 1, but received {args.alpha}')
+        if args.gamma < 2:
+            raise ValueError(f'ERROR: The value of gamma is unacceptable.')
         else:
-            alpha = args.alpha
-        if args.t <= 0:
-            raise ValueError(f'ERROR: The diffusion time t has to be greater than 0, but received {args.t}')
-        else:
-            t = args.t
-        if args.K < 2:
-            raise ValueError(f'ERROR: The number of iteration K has to be greater than 1, but received {args.K}')
-        else:
-            K = args.K
+            gamma = args.gamma
     
     enable_bias = args.enable_bias
     epochs = args.epochs
     opt = args.opt
     early_stopping_patience = args.early_stopping_patience
 
+    model_save_path = model_save_path + model_name + '_' + norm_lap_type + '_' + str(gamma) + '_gamma_' + '.pth'
+
     return device, dataset_name, data_path, learning_rate, weight_decay_rate, model_name, \
-            model_save_path, alpha, t, K, renorm_adj_type, enable_bias, epochs, opt, early_stopping_patience
+            model_save_path, gamma, norm_lap_type, enable_bias, epochs, opt, early_stopping_patience
     
-def process_data(device, model_save_path, dataset_name, data_path, renorm_adj_type, alpha, t, K):
+def process_data(device, dataset_name, data_path, norm_lap_type, gamma):
+
     if dataset_name == 'cora' or dataset_name == 'citeseer' or dataset_name == 'pubmed':
         features, dir_adj, g, labels, idx_train, idx_val, idx_test = dataloader.load_citation_data(dataset_name, data_path)
     elif dataset_name == 'cornell' or dataset_name == 'texas' or dataset_name == 'washington' or dataset_name == 'wisconsin':
         features, dir_adj, g, labels, idx_train, idx_val, idx_test = dataloader.load_webkb_data(dataset_name, data_path)
 
-    model_save_path = model_save_path + model_name + '_' + renorm_adj_type + '_' + str(g) + '_g_' \
-                    + str(alpha) + '_alpha_' + str(t) + '_t_' + str(K) + '_iteration' + '.pth'
-
     n_vertex, n_feat, n_labels, n_class = features.shape[0], features.shape[1], labels.shape[0], labels.shape[1]
     labels = np.argmax(labels, axis=1)
 
-    if renorm_adj_type == 'sym':
-        renorm_mag_adj = utility.calc_sym_renorm_mag_adj(dir_adj, g)
-    elif renorm_adj_type == 'rw':
-        renorm_mag_adj = utility.calc_rw_renorm_mag_adj(dir_adj, g)
+    if norm_lap_type == 'sym':
+        norm_lap = utility.calc_sym_lap(dir_adj)
+    elif norm_lap_type == 'rw':
+        norm_lap = utility.calc_rw_lap(dir_adj)
 
-    features = utility.calc_mgc_features(renorm_mag_adj, features, alpha, t, K, g)
+    features = utility.calc_lgc_features(norm_lap, features, gamma)
 
     idx_train = torch.LongTensor(idx_train)
     idx_val = torch.LongTensor(idx_val)
@@ -150,14 +139,11 @@ def process_data(device, model_save_path, dataset_name, data_path, renorm_adj_ty
     features = torch.from_numpy(features).to(device)
     labels = torch.LongTensor(labels).to(device)
 
-    return features, g, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex, model_save_path
+    return features, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex
 
-def prepare_model(g, n_feat, n_class, n_vertex, enable_bias, early_stopping_patience, learning_rate, \
+def prepare_model(n_feat, n_class, n_vertex, enable_bias, early_stopping_patience, learning_rate, \
                 weight_decay_rate, model_save_path, opt):
-    if g == 0:
-        model = models.RSMGC(n_feat, n_class, enable_bias).to(device)
-    else:
-        model = models.CSMGC(n_feat, n_class, enable_bias).to(device)
+    model = models.LGC(n_feat, n_class, enable_bias).to(device)
 
     loss = nn.NLLLoss()
     early_stopping = earlystopping.EarlyStopping(patience=early_stopping_patience, path=model_save_path, verbose=True)
@@ -224,11 +210,11 @@ def test(model, model_save_path, features, labels, loss, idx_test, model_name, d
         nni.report_final_result(acc_test.item())
 
 if __name__ == "__main__":
-    device, dataset_name, data_path, learning_rate, weight_decay_rate, model_name, model_save_path, alpha, t, K, renorm_adj_type, enable_bias, epochs, opt, early_stopping_patience = get_parameters()
+    device, dataset_name, data_path, learning_rate, weight_decay_rate, model_name, model_save_path, gamma, norm_lap_type, enable_bias, epochs, opt, early_stopping_patience = get_parameters()
 
-    features, g, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex, model_save_path = process_data(device, model_save_path, dataset_name, data_path, renorm_adj_type, alpha, t, K)
+    features, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex = process_data(device, dataset_name, data_path, norm_lap_type, gamma)
 
-    model, loss, early_stopping, optimizer, scheduler = prepare_model(g, n_feat, n_class, n_vertex, enable_bias, early_stopping_patience, learning_rate, weight_decay_rate, model_save_path, opt)
+    model, loss, early_stopping, optimizer, scheduler = prepare_model(n_feat, n_class, n_vertex, enable_bias, early_stopping_patience, learning_rate, weight_decay_rate, model_save_path, opt)
 
     mean_train_epoch_time_duration = train(epochs, model, optimizer, scheduler, early_stopping, features, labels, loss, idx_train, idx_val)
     test(model, model_save_path, features, labels, loss, idx_test, model_name, dataset_name, mean_train_epoch_time_duration)

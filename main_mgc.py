@@ -127,20 +127,18 @@ def get_parameters():
     opt = args.opt
     early_stopping_patience = args.early_stopping_patience
 
-    model_save_path = model_save_path + model_name + '_' + renorm_adj_type + '_' + \
-                    str(renorm_adj_type) + '_' + str(alpha) + '_alpha_' + str(t) + '_t_' + str(K) + \
-                    '_iteration' + '.pth'
-
     return device, dataset_name, data_path, graph_path, learning_rate, weight_decay_rate, model_name, \
             model_save_path, alpha, t, K, renorm_adj_type, n_hid, enable_bias, act_func, droprate, \
             epochs, opt, early_stopping_patience
     
-def process_data(device, dataset_name, data_path, graph_path, renorm_adj_type, alpha, t, K):
-
+def process_data(device, model_save_path, dataset_name, data_path, graph_path, renorm_adj_type, alpha, t, K):
     if dataset_name == 'cora' or dataset_name == 'citeseer' or dataset_name == 'pubmed':
         features, dir_adj, g, labels, idx_train, idx_val, idx_test = dataloader.load_citation_data(dataset_name, data_path)
     elif dataset_name == 'cornell' or dataset_name == 'texas' or dataset_name == 'washington' or dataset_name == 'wisconsin':
         features, dir_adj, g, labels, idx_train, idx_val, idx_test = dataloader.load_webkb_data(dataset_name, data_path)
+
+    model_save_path = model_save_path + model_name + '_' + renorm_adj_type + '_' + str(g) + '_g_' \
+                    + str(alpha) + '_alpha_' + str(t) + '_t_' + str(K) + '_iteration' + '.pth'
 
     n_vertex, n_feat, n_labels, n_class = features.shape[0], features.shape[1], labels.shape[0], labels.shape[1]
     labels = np.argmax(labels, axis=1)
@@ -161,7 +159,7 @@ def process_data(device, dataset_name, data_path, graph_path, renorm_adj_type, a
     features = torch.from_numpy(features).to(device)
     labels = torch.LongTensor(labels).to(device)
 
-    return features, g, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex
+    return features, g, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex, model_save_path
 
 def prepare_model(g, n_feat, n_hid, n_class, n_vertex, enable_bias, act_func, droprate, \
                 early_stopping_patience, learning_rate, weight_decay_rate, model_save_path, opt):
@@ -243,7 +241,7 @@ def test(model, model_save_path, features, labels, loss, idx_test, model_name, d
 if __name__ == "__main__":
     device, dataset_name, data_path, graph_path, learning_rate, weight_decay_rate, model_name, model_save_path, alpha, t, K, renorm_adj_type, n_hid, enable_bias, act_func, droprate, epochs, opt, early_stopping_patience = get_parameters()
 
-    features, g, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex = process_data(device, dataset_name, data_path, graph_path, renorm_adj_type, alpha, t, K)
+    features, g, labels, idx_train, idx_val, idx_test, n_feat, n_class, n_vertex, model_save_path = process_data(device, model_save_path, dataset_name, data_path, graph_path, renorm_adj_type, alpha, t, K)
 
     model, loss, early_stopping, optimizer, scheduler = prepare_model(g, n_feat, n_hid, n_class, n_vertex, enable_bias, act_func, droprate, early_stopping_patience, learning_rate, weight_decay_rate, model_save_path, opt)
 
