@@ -35,13 +35,13 @@ def get_parameters():
     parser.add_argument('--enable_cuda', type=bool, default=True, \
                         help='enable or disable CUDA, default as True')
     parser.add_argument('--seed', type=int, default=100, help='the random seed')
-    parser.add_argument('--dataset_config_path', type=str, default='./config/data/cora.ini', \
+    parser.add_argument('--dataset_config_path', type=str, default='./config/data/cornell.ini', \
                         help='the path of dataset config file, cora.ini for CoRA')
     parser.add_argument('--model_config_path', type=str, default='./config/model/smgc_sym.ini', \
                         help='the path of model config file')
-    parser.add_argument('--alpha', type=float, default=0.27, help='alpha in (0, 1)')
-    parser.add_argument('--t', type=float, default=0.15, help='the diffusion time, t > 0')
-    parser.add_argument('--K', type=int, default=9, help='the number of iteration, K >= 2')
+    parser.add_argument('--alpha', type=float, default=0.94, help='alpha in (0, 1)')
+    parser.add_argument('--t', type=float, default=49, help='the diffusion time, t > 0')
+    parser.add_argument('--K', type=int, default=40, help='the number of iteration, K >= 2')
     parser.add_argument('--enable_bias', type=bool, default=True, help='enable to use bias in graph convolution layers or not')
     parser.add_argument('--epochs', type=int, default=10000, help='epochs, default as 10000')
     parser.add_argument('--opt', type=str, default='Adam', help='optimizer, default as Adam')

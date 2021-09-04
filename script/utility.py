@@ -1,38 +1,7 @@
 import math
 import numpy as np
 import scipy.sparse as sp
-
 import torch
-
-def calc_sym_lap(dir_adj):
-    n_vertex = dir_adj.shape[0]
-    id = sp.csc_matrix(sp.identity(n_vertex))
-
-    adj = dir_adj + dir_adj.T.multiply(dir_adj.T > dir_adj) - dir_adj.multiply(dir_adj.T > dir_adj)
-    
-    row_sum = adj.sum(axis=1).A1
-    row_sum_inv_sqrt = np.power(row_sum, -0.5)
-    row_sum_inv_sqrt[np.isinf(row_sum_inv_sqrt)] = 0.
-    deg_inv_sqrt = sp.diags(row_sum_inv_sqrt)
-
-    sym_norm_lap = id - deg_inv_sqrt.dot(adj).dot(deg_inv_sqrt)
-
-    return sym_norm_lap
-
-def calc_rw_lap(dir_adj):
-    n_vertex = dir_adj.shape[0]
-    id = sp.csc_matrix(sp.identity(n_vertex))
-
-    adj = dir_adj + dir_adj.T.multiply(dir_adj.T > dir_adj) - dir_adj.multiply(dir_adj.T > dir_adj)
-    
-    row_sum = adj.sum(axis=1).A1
-    row_sum_inv = np.power(row_sum, -1)
-    row_sum_inv[np.isinf(row_sum_inv)] = 0.
-    deg_inv = sp.diags(row_sum_inv)
-
-    sym_rw_lap = id - deg_inv.dot(adj)
-
-    return sym_rw_lap
 
 def calc_sym_renorm_mag_adj(dir_adj, g):
     n_vertex = dir_adj.shape[0]
@@ -103,18 +72,6 @@ def calc_mgc_features(renorm_mag_adj, features, alpha, t, K, g):
         mgc_features = np.array(mgc_features.toarray(), dtype=np.complex64)
     
     return mgc_features
-
-def calc_lgc_features(norm_lap, features, gamma):
-    n_vertex = norm_lap.shape[0]
-    id = sp.csc_matrix(sp.identity(n_vertex))
-
-    graph_filter = id - 1 / gamma * norm_lap
-    lgc_features = graph_filter.dot(features)
-
-    lgc_features = np.array(lgc_features.toarray(), dtype=np.float32)
-
-    return lgc_features
-
 
 '''
 def cnv_sparse_mat_to_coo_tensor(sp_mat, device):

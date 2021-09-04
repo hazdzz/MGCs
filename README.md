@@ -22,7 +22,7 @@ pip3 install -r requirements.txt
 ### Node classification accuracy in WebKB (%) (random seed = 10, 100, or 1000)
 | Model | Cornell | Texas | Washington | Wisconsin |
 | :----: | :----: | :----: | :----: | :----: |
-| GAT | 51.28 ± 5.13 | 61.84 ± 1.32 | 50.00 ± 2.17 | 50.00 ± 2.83 | 
+| GAT | 41.03 ± 0.00 | 52.63 ± 2.63 | 63.04 ± 0.00 | 56.61 ± 1.88 |
 | sMGC | | | | |
 | MGC | | | | |
 

@@ -82,6 +82,7 @@ def load_webkb_data(dataset_name, dataset_path):
         g = 0
     else:
         g = 1 / cycle
+        g = round(g, 2)
     dir_adj = sp.csc_matrix(dir_adj)
 
     labels = np.genfromtxt(dataset_path + 'labels.csv', delimiter=',')
