@@ -1,6 +1,6 @@
 # Magnetic Graph Convolutional Networks
-<img src="./figure/magnetic_eigenmap.png" width="50%" height="50%" alt="Magnetic Eigenmap"/>
-<img src="./figure/directed_graph.png" width="50%" height="50%" alt="A directed graph"/>
+<img src="./figure/magnetic_eigenmap.png" width="50%" height="50%" alt="The Magnetic Eigenmap"/>
+<img src="./figure/directed_graph.png" width="50%" height="50%" alt="A directed 4-cycle"/>
 
 ## About
 The official PyTorch implementation for the paper *sMGC: A Complex-Valued Graph Convolutional Network via the Magnetic Laplacian for Directed Graphs*.

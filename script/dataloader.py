@@ -75,6 +75,7 @@ def load_webkb_data(dataset_name, dataset_path):
     features = norm_feat(features)
 
     dir_adj = np.genfromtxt(dataset_path + 'dir_adj.csv', delimiter=',')
+
     G = nx.from_numpy_array(dir_adj)
     try:
         cycle = len(nx.algorithms.cycles.find_cycle(G, orientation='original'))
@@ -83,6 +84,7 @@ def load_webkb_data(dataset_name, dataset_path):
     else:
         g = 1 / cycle
         #g = round(g, 2)
+
     dir_adj = sp.csc_matrix(dir_adj)
 
     labels = np.genfromtxt(dataset_path + 'labels.csv', delimiter=',')
