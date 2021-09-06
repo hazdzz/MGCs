@@ -1,5 +1,5 @@
 {
-    "alpha":{"_type":"quniform", "_value":[0.90, 0.99, 0.01]},
-    "t":{"_type":"quniform", "_value":[40, 50, 0.05]},
+    "alpha":{"_type":"quniform", "_value":[0.01, 0.99, 0.01]},
+    "t":{"_type":"quniform", "_value":[0.5, 50, 0.01]},
     "K":{"_type":"quniform", "_value":[2, 50, 1]}
 }

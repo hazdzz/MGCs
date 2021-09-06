@@ -35,18 +35,18 @@ def get_parameters():
     parser.add_argument('--enable_cuda', type=bool, default=True, \
                         help='enable or disable CUDA, default as True')
     parser.add_argument('--seed', type=int, default=100, help='the random seed')
-    parser.add_argument('--dataset_config_path', type=str, default='./config/data/cora.ini', \
+    parser.add_argument('--dataset_config_path', type=str, default='./config/data/washington.ini', \
                         help='the path of dataset config file, cora.ini for CoRA')
     parser.add_argument('--model_config_path', type=str, default='./config/model/mgc_sym.ini', \
                         help='the path of model config file')
-    parser.add_argument('--alpha', type=float, default=0.01, help='alpha in (0, 1)')
-    parser.add_argument('--t', type=float, default=25.95, help='the diffusion time, t > 0')
-    parser.add_argument('--K', type=int, default=35, help='the number of iteration, K >= 2')
+    parser.add_argument('--alpha', type=float, default=0.73, help='alpha in (0, 1)')
+    parser.add_argument('--t', type=float, default=42.36, help='the diffusion time, t > 0')
+    parser.add_argument('--K', type=int, default=21, help='the number of iteration, K >= 2')
     parser.add_argument('--n_hid', type=int, default=64, help='the number of hidden layer feature')
     parser.add_argument('--enable_bias', type=bool, default=True, help='enable to use bias in graph convolution layers or not')
     parser.add_argument('--act_func', type=str, default='c_leaky_relu', help='the complex-valued activation function for graph convolution layers, \
                         default as c_leaky_relu, c_relu as alternative')
-    parser.add_argument('--droprate', type=float, default=0.3, help='dropout rate, default as 0.5')
+    parser.add_argument('--droprate', type=float, default=0.1, help='dropout rate, default as 0.5')
     parser.add_argument('--epochs', type=int, default=10000, help='epochs, default as 1000')
     parser.add_argument('--opt', type=str, default='Adam', help='optimizer, default as Adam')
     parser.add_argument('--early_stopping_patience', type=int, default=50, help='early stopping patience, default as 50')
@@ -207,7 +207,7 @@ def train(epochs, model, optimizer, scheduler, early_stopping, features, labels,
         loss_val, acc_val = val(model, labels, output, loss, idx_val)
         print('Epoch: {:03d} | Learning rate: {:.8f} | Train loss: {:.6f} | Train acc: {:.6f} | Val loss: {:.6f} | Val acc: {:.6f} | Training duration: {:.6f}'.\
             format(epoch+1, optimizer.param_groups[0]['lr'], loss_train.item(), acc_train.item(), loss_val.item(), acc_val.item(), train_epoch_time_duration))
-        #nni.report_intermediate_result(acc_val.item())
+        nni.report_intermediate_result(acc_val.item())
 
         early_stopping(loss_val, model)
         if early_stopping.early_stop:
@@ -236,7 +236,7 @@ def test(model, model_save_path, features, labels, loss, idx_test, model_name, d
         acc_test = utility.calc_accuracy(output[idx_test], labels[idx_test])
         print('Model: {} | Dataset: {} | Test loss: {:.6f} | Test acc: {:.6f} | Mean training duration for each epoch: {:.6f}'.\
             format(model_name, dataset_name, loss_test.item(), acc_test.item(), mean_train_epoch_time_duration))
-        #nni.report_final_result(acc_test.item())
+        nni.report_final_result(acc_test.item())
 
 if __name__ == "__main__":
     device, dataset_name, data_path, graph_path, learning_rate, weight_decay_rate, model_name, model_save_path, alpha, t, K, renorm_adj_type, n_hid, enable_bias, act_func, droprate, epochs, opt, early_stopping_patience = get_parameters()

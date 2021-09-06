@@ -21,6 +21,7 @@ class CLinear(nn.Module):
 
     def initialize_parameters(self):
         cinit.complex_xavier_uniform_(self.weight)
+        #cinit.complex_kaiming_uniform_(self.weight)
 
         if self.bias is not None:
             init.zeros_(self.bias)

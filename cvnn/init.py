@@ -25,7 +25,8 @@ def calculate_gain(nonlinearity, param=None):
             raise ValueError("negative_slope {} not a valid number".format(param))
         return math.sqrt(2.0 / (1 + negative_slope ** 2))
     elif nonlinearity == 'selu' or nonlinearity == 'c_selu':
-        return 3.0 / 4  # Value found empirically (https://github.com/pytorch/pytorch/pull/50664)
+        # Value found empirically (https://github.com/pytorch/pytorch/pull/50664)
+        return 3.0 / 4
     else:
         raise ValueError("Unsupported nonlinearity {}".format(nonlinearity))
 
@@ -74,7 +75,7 @@ def complex_xavier_normal_(tensor: Tensor, gain: float = 1.) -> Tensor:
             tensor.zero_()
             return tensor.add_(phase)
     else:
-        return init.xavier_uniform_(tensor=tensor, gain=gain)
+        return init.xavier_normal_(tensor=tensor, gain=gain)
 
 # Not sure it is right
 def complex_kaiming_normal_(tensor: Tensor, a: float = 0., mode: str = 'fan_in', nonlinearity: str = 'leaky_relu'):
@@ -91,4 +92,4 @@ def complex_kaiming_normal_(tensor: Tensor, a: float = 0., mode: str = 'fan_in',
             tensor.zero_()
             return tensor.add_(phase)
     else:
-        return init.kaiming_uniform_(tensor=tensor, a=a, mode=mode, nonlinearity=nonlinearity)
+        return init.kaiming_normal_(tensor=tensor, a=a, mode=mode, nonlinearity=nonlinearity)

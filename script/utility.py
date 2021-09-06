@@ -1,6 +1,9 @@
 import math
+from operator import inv
+import time
 import numpy as np
 import scipy.sparse as sp
+from scipy.sparse.linalg import inv
 import torch
 
 def calc_sym_renorm_mag_adj(dir_adj, g):
@@ -52,6 +55,8 @@ def calc_rw_renorm_mag_adj(dir_adj, g):
     return rw_renorm_mag_adj
 
 def calc_mgc_features(renorm_mag_adj, features, alpha, t, K, g):
+    #begin_time = time.time()
+
     n_vertex = renorm_mag_adj.shape[0]
     id = sp.csc_matrix(sp.identity(n_vertex))
     
@@ -65,11 +70,15 @@ def calc_mgc_features(renorm_mag_adj, features, alpha, t, K, g):
     mgc_features = features
     for k in range(1, K):
         mgc_features = mgc_adj_denom.dot(mgc_features) + mgc_adj_num.dot(features)
-
+    
     if g == 0:
         mgc_features = np.array(mgc_features.toarray(), dtype=np.float32)
     else:
         mgc_features = np.array(mgc_features.toarray(), dtype=np.complex64)
+
+    #end_time = time.time()
+    #calc_graph_time = end_time - begin_time
+    #print(calc_graph_time)
     
     return mgc_features
 
