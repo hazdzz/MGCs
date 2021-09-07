@@ -1,6 +1,0 @@
-{
-    "alpha":{"_type":"quniform", "_value":[0.01, 0.99, 0.01]},
-    "t":{"_type":"quniform", "_value":[0.5, 50, 0.01]},
-    "K":{"_type":"quniform", "_value":[2, 50, 1]},
-    "droprate":{"_type":"choice", "_value":[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}
-}
