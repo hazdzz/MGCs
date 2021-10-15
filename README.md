@@ -3,7 +3,7 @@
 <img src="./figure/directed_graph.png" width="50%" height="50%" alt="A directed 4-cycle"/>
 
 ## About
-The official PyTorch implementation for the paper *sMGC: A Complex-Valued Graph Convolutional Network via the Magnetic Laplacian for Directed Graphs*.
+The official PyTorch implementation for the paper *sMGC: A Complex-Valued Graph Convolutional Network via Magnetic Laplacian for Directed Graphs*.
 
 ## Requirements
 To install requirements:
