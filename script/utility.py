@@ -1,5 +1,4 @@
 import math
-from operator import inv
 import time
 import numpy as np
 import scipy.sparse as sp
