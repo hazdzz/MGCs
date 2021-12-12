@@ -1,4 +1,4 @@
-# Magnetic Graph Convolutional Networks
+# Magnetic Graph Convolutional Networks v1
 <img src="./figure/magnetic_eigenmap.png" width="50%" height="50%" alt="The Magnetic Eigenmap"/>
 <img src="./figure/directed_graph.png" width="50%" height="50%" alt="A directed 4-cycle"/>
 
